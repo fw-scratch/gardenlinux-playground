@@ -1,0 +1,27 @@
+name: Build Garden Linux Dev Image
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [ amd64, arm64 ]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends qemu-user-static qemu-utils
+
+    - name: Build
+      run: |
+        ./build metal_dev-${{ matrix.arch }}
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: gardenlinux-metal_dev-${{ matrix.arch }}
+        path: .build/metal*-${{ matrix.arch }}-today-*
